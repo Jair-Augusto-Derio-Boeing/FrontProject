@@ -2,16 +2,16 @@
     <div class="backdrop" v-if="showCriarTarefa">
         <div class="modal">
             <div class="escrita">
-                <p class="p">Nome da tarefa</p>
-                <p class="p2">Descrição</p>
+                <input type="text" class="p" placeholder="Nome da tarefa" v-model="nomeTarefa" />
+                <input type="text" class="p2" placeholder="Descrição" v-model="descricaoTarefa">
                 <div class="data">
-                    <img src="../assets/calender.svg" alt="calender" class="calender">
-                    <p>Data de vencimento</p>
+                    <img src="../assets/calendar.svg" alt="calendar" class="calendar">
+                    <input class="input-date" type="date" placeholder="Data de vencimento" v-model="dateTarefa">
                 </div>
             </div>
             <div class="button">
-                <button class="button-cancelar" @click="closeModal">Cancelar</button>
-                <button class="button-criar">Criar Tarefa</button>
+                <button class="button-cancelar" @click="closeModal()">Cancelar</button>
+                <button class="button-criar" @click="createTarefa(), closeModal()">Criar Tarefa</button>
             </div>
 
             <slot></slot>
@@ -20,22 +20,44 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
-    methods: {
-        closeModal() {
-            this.$emit('update:showCriarTarefa', false)
+    data() {
+        return {
+            nomeTarefa: '',
+            descricaoTarefa: '',
+            dateTarefa: 0
         }
     },
     props: {
-        modalTitle: {
-            type: String,
-            default: ''
-        },
         showCriarTarefa: {
             type: Boolean,
-            requied: true,
+            required: true,
         }
     },
+    methods: {
+        closeModal() {
+            console.log('fecha o modal');
+            this.$emit('update:showCriarTarefa', false);
+            this.nomeTarefa = ''
+            this.descricaoTarefa = ''
+            this.dateTarefa = 0
+        },
+        createTarefa() {
+            let data = {
+                title: this.nomeTarefa,
+                description: this.descricaoTarefa,
+                due_date: this.dateTarefa,
+            }
+            // axios.post('', data)
+                // .then(() => this.$emit('update:showCriarTarefa', false))
+            console.log('criou a tarefa');
+            console.log(`nome da tarefa ${this.nomeTarefa}`);
+            console.log(`descrição de tarefa ${this.descricaoTarefa}`);
+            console.log(`data de vencimento ${this.dateTarefa}`);
+        },
+    },
+    
 }
 </script>
 
@@ -52,6 +74,7 @@ export default {
     justify-content: center;
     align-items: center;
     color: black;
+    cursor:default;
 }
 
 .modal {
@@ -70,20 +93,30 @@ export default {
     font-weight: 400;
     height: 148px;
     border: 1px solid #E5E5E5;
+    display: grid;
+}
+input{
+    border: transparent;
+    outline: none;
 }
 
 .p {
+    width: 180px;
     font-size: 16px;
-    font-weight: 400;
+    font-weight: 600;
+    color:black;
 }
 
 .p2 {
     margin-top: 10px;
     font-size: 14px;
+    width: 280px;
+    color: #81858E;
+
+
 }
 
 .button {
-    cursor: pointer;
     width: 678px;
     height: 68px;
     top: 148px;
@@ -95,6 +128,7 @@ export default {
 }
 
 .button-cancelar {
+    cursor: pointer;
     width: 102px;
     height: 40px;
     top: 162px;
@@ -116,6 +150,7 @@ export default {
     font-weight: 600;
     font-size: 14px;
     border: 0px;
+    cursor: pointer;
 
 }
 
@@ -131,12 +166,15 @@ export default {
 
 }
 
-.calender {
+.calendar {
     width: 13px;
     height: 14.44px;
     top: 106px;
     margin-left: -8px;
     font-size: 14px;
 
+}
+.input-date::-webkit-calendar-picker-indicator {
+    display: none;
 }
 </style>
