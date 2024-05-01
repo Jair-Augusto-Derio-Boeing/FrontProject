@@ -20,7 +20,7 @@ const router = createRouter({
     {
       path:'/test',
       name:'teste',
-      component: () => import('../views/Entrada.vue')
+      component: () => import('../views/Main.vue')
     }
   ]
 })

@@ -1,13 +1,17 @@
 <template>
-    <div class="backdrop" v-if="abreSub">
+    <div class="backdrop" v-if="showCreateTask">
         <div class="modal">
             <div class="escrita">
-                <input type="text" class="p" placeholder="Nome da subtarefa" v-model="nomeSubTarefa" />
-                <input type="text" class="p2" placeholder="Descrição" v-model="descricaoSubTarefa">
+                <input type="text" class="input1" placeholder="Nome da tarefa" v-model="titleTask" />
+                <input type="text" class="input2" placeholder="Descrição" v-model="descriptionTask">
+                <div class="data">
+                    <img src="../assets/calendar.svg" alt="calendar" class="calendar">
+                    <input class="input-date" type="date" placeholder="Data de vencimento" v-model="dateTask">
+                </div>
             </div>
             <div class="button">
                 <button class="button-cancelar" @click="closeModal()">Cancelar</button>
-                <button class="button-criar" @click="createTarefa(), closeModal()">Criar subtarefa</button>
+                <button class="button-criar" @click="createTask(), closeModal()">Criar Tarefa</button>
             </div>
 
             <slot></slot>
@@ -20,13 +24,13 @@ import axios from 'axios';
 export default {
     data() {
         return {
-            nomeSubTarefa: '',
-            descricaoSubTarefa: '',
-            dateSubTarefa: 0
+            titleTask: '',
+            descriptionTask: '',
+            dateTask: ''
         }
     },
     props: {
-        abreSub: {
+        showCreateTask: {
             type: Boolean,
             required: true,
         }
@@ -34,23 +38,21 @@ export default {
     methods: {
         closeModal() {
             console.log('fecha o modal');
-            this.$emit('update:showCriarTarefa', false);
+            this.$emit('update:showCreateTask', false);
+            this.titleTask = ''
+            this.descriptionTask = ''
+            this.dateTask = 0
         },
-        createTarefa() {
-            let data = {
-                title: this.nomeSubTarefa,
-                description: this.descricaoSubTarefa,
-                due_date: this.dateSubTarefa,
-            }
-            // axios.post('', data)
-                // .then(() => this.$emit('update:showCriarTarefa', false))
-            console.log('criou a subtarefa');
-            console.log(`nome da subtarefa ${this.nomeSubTarefa}`);
-            console.log(`descrição de subtarefa ${this.descricaoSubTarefa}`);
-            console.log(`data de vencimento ${this.dateSubTarefa}`);
-        },
+        createTask() {
+            axios.post('/task', {
+                'title': this.titleTask,
+                'description': this.descriptionTask,
+                'due_date': this.dateTask,
+                'status': 'pending'
+            });
+        }
     },
-    
+
 }
 </script>
 
@@ -67,7 +69,7 @@ export default {
     justify-content: center;
     align-items: center;
     color: black;
-    cursor:default;
+    cursor: default;
 }
 
 .modal {
@@ -88,19 +90,20 @@ export default {
     border: 1px solid #E5E5E5;
     display: grid;
 }
-input{
+
+input {
     border: transparent;
     outline: none;
 }
 
-.p {
+.input1 {
     width: 180px;
     font-size: 16px;
     font-weight: 600;
-    color:black;
+    color: black;
 }
 
-.p2 {
+.input2 {
     margin-top: 10px;
     font-size: 14px;
     width: 280px;
@@ -167,6 +170,7 @@ input{
     font-size: 14px;
 
 }
+
 .input-date::-webkit-calendar-picker-indicator {
     display: none;
 }
