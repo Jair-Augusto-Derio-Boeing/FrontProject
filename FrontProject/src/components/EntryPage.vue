@@ -1,45 +1,51 @@
 <template>
-    <div class="bottom" v-if="showEntryPage">
+    <div class="back" v-if="showEntryPage">
         <p class="entry">Entrada</p>
-        <div class="tasks" v-for="task in Tasks" :key="task.id" @click="selectedTask = task"
-            :style="selectedTask.id === task.id ? 'background-color: #FAFAFA' : ''">
-            <div class="flex">
-                <div class="grid">
+        <div class="cards">
+            <div class="tasks" v-for="task in Tasks" :key="task.id" @click="selectedTask = task"
+                :style="selectedTask.id === task.id ? 'background-color: #FAFAFA' : ''">
+                <div class="flex">
+                    <div class="grid">
 
-                    <div class="round">
-                        <input type="checkbox" :name="'checkbox' + task.id" :id="'checkbox' + task.id"
-                        :checked="IsTaskChecked(task)" v-on:change="updateTaskStatus(task)" />
-                        <label :for="'checkbox' + task.id"></label>
-                        <p class="title"> {{ task.title }}</p>
+                        <div class="round">
+                            <input type="checkbox" :name="'checkbox' + task.id" :id="'checkbox' + task.id"
+                                :checked="IsTaskChecked(task)" v-on:change="updateTaskStatus(task)" />
+                            <label :for="'checkbox' + task.id"></label>
+                            <p class="title"> {{ task.title }}</p>
+                        </div>
+
+                        <p class="description">{{ task.description }}</p>
+
+                        <div :class="{
+                            'today': Today(task.due_date),
+                            'future': !Today(task.due_date) && !Past(task.due_date),
+                            'past': Past(task.due_date)
+                        }">
+                            <img src="../assets/greenCalendar.svg" v-if="!Past(task.due_date)">
+                            <img src="../assets/redCalendar.svg" v-if="Past(task.due_date)">
+                            <p>{{ Today(task.due_date) ? "Hoje" : formatDate(task.due_date) }}</p>
+                        </div>
                     </div>
 
-                    <p class="description">{{ task.description }}</p>
+                    <div class="icons-hover">
+                        <div class="edit">
+                            <span id="edit">Editar tarefa</span>
+                            <img src="../assets/edit.svg" alt="edit" @click="openCreateTask()">
+                        </div>
+                        <div class="calendar-hover">
+                            <span id="calendar">Definir vencimento</span>
+                            <img src="../assets/calendar.svg" alt="calendar">
+                        </div>
+                        <div class="trash">
+                            <span id="trash">Excluir tarefa</span>
+                            <img src="../assets/trash.svg" alt="trash bucket" @click="deleteTask(task.id)">
+                        </div>
+                    </div>
 
-                    <div class="data">
-                        <img src="../assets/calendar.svg" alt="calendar" class="calendar">
-                        <p class="p-date">{{ task.due_date }}</p>
-                    </div>
-                </div>
-                <div class="icons-hover">
-                    <div class="edit">
-                        <span id="edit">Editar tarefa</span>
-                        <img src="../assets/edit.svg" alt="edit">
-                    </div>
-                    <div class="calendar-hover">
-                        <span id="calendar">Definir vencimento</span>
-                        <img src="../assets/calendar.svg" alt="calendar">
-                    </div>
-                    <div class="trash">
-                        <span id="trash">Excluir tarefa</span>
-                        <img src="../assets/trash.svg" alt="trash bucket" @click="deleteTask(task.id)">
-                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- <button @click="getTask()">vem titulo</button>
-        <p>{{  this.Tasks}}</p> -->
-
 </template>
 
 <script>
@@ -51,16 +57,24 @@ export default {
             type: Boolean,
             required: true
         },
+        showCreateTask: {
+            type: Boolean,
+            required: true
+        },
     },
     data() {
         return {
             Tasks: [],
             selectedTask: {},
             taskIsChecked: [],
+            showCreateTask: false
 
         }
     },
     methods: {
+        openCreateTask() {
+            this.$emit('openCreateTask')
+        },
         getTask() {
             axios.get('/task')
                 .then((response) => {
@@ -70,17 +84,22 @@ export default {
         },
         deleteTask(index) {
             axios.delete(`/task/${index}`)
+                .then(() => {
+                    let deletedTask = this.Tasks.findIndex(item => item.id ===
+                        index)
+                    this.Tasks.splice(deletedTask, 1);
+                })
         },
         IsTaskChecked(task) {
             return this.taskIsChecked.some(item => item.id === task.id && item.status === 'completed');
         },
         updateTaskStatus(task) {
-            const newStatus = task.status === 'completed' ? 'pending' : 'completed';
+            let newStatus = task.status === 'completed' ? 'pending' : 'completed';
 
             axios.put(`/task/${task.id}`, { status: newStatus })
-                .then( () => {
-                    
-                    const taskToUpdate = this.taskIsChecked.find(item => item.id === task.id);
+                .then(() => {
+
+                    let taskToUpdate = this.taskIsChecked.find(item => item.id === task.id);
 
                     if (taskToUpdate) {
                         taskToUpdate.status = newStatus;
@@ -90,42 +109,178 @@ export default {
 
                     task.status = newStatus;
                 })
-                .catch(error => {
-                    console.error(`Error updating task: ${error}`);
-                });
-        }
+        },
+        formatDate(dueDate) {
+            let date = new Date(dueDate);
+            let formatDate = date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+            return formatDate;
+        },
+        Today(date) {
+            let today = new Date();
+            let taskDate = new Date(date);
+            return taskDate.getFullYear() === today.getFullYear() &&
+                taskDate.getMonth() === today.getMonth() &&
+                taskDate.getDate() === today.getDate();
+        },
+        Past(date) {
+            let today = new Date();
+            let taskDate = new Date(date);
+            return taskDate < today && !this.Today(date);
+        },
     },
     created() {
         this.getTask();
     },
 
+
 }
 </script>
 
 <style scoped>
+.today {
+    background: #0094881A;
+    color: #00948800 !important;
+    font-weight: 500;
+    width: 72px;
+    height: 25px;
+    margin-left: 68.5px;
+    margin-top: -30px;
+    display: flex;
+
+
+}
+
+.today p {
+    color: #009488;
+    position: relative;
+    left: 12px;
+    font-family: Montserrat;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 17.07px;
+    text-align: left;
+    top: 4px;
+}
+
+.today img {
+    width: 13;
+    height: 14;
+    top: -3px;
+    left: 5px;
+    margin-top: 6px;
+    position: relative;
+
+}
+
+
+.past {
+    background: #D314081A;
+    color: #D31408 !important;
+    font-weight: 500;
+    width: 130px;
+    height: 30px;
+    position: relative;
+    left: 65px;
+    display: flex;
+    top: -15px;
+}
+
+.past img {
+    width: 13;
+    height: 14;
+    top: -6px;
+    left: 5px;
+    margin-top: 12px;
+    position: relative;
+}
+
+.past p {
+    color: #D31408;
+    position: relative;
+    left: 16px;
+    font-family: Montserrat;
+    font-size: 15px;
+    font-weight: 500;
+    top: 4px;
+}
+
+.future {
+    background: #0094881A;
+    color: #009488 !important;
+    font-weight: 500;
+    width: 130px;
+    height: 30px;
+    position: relative;
+    left: 65px;
+    top: -15px;
+    display: flex;
+
+}
+
+.future img {
+    width: 13;
+    height: 14;
+    top: -6px;
+    left: 5px;
+    margin-top: 12px;
+    position: relative;
+
+}
+
+.future p {
+    color: #009488;
+    position: relative;
+    left: 16px;
+    font-family: Montserrat;
+    font-size: 15px;
+    font-weight: 500;
+    top: 4px;
+
+}
+
+.back {
+    margin-top: 10px;
+    margin-left: 900px;
+
+}
+
 .flex {
     display: flex;
+
 }
 
 .grid {
     display: grid;
+
 }
 
 .icons-hover {
-    position: relative;
     display: flex;
-    margin-left: 310px;
-    align-items: center;
+    left: 900px;
+    margin-top: 25px;
     height: 109px;
     width: 105px;
-    gap: 30px;
-    transition: 0.3s opacity ease;
+    gap: 35px;
+    transition: 0s opacity ease;
 }
 
 .edit,
 .calendar-hover,
 .trash img {
-    cursor: pointer;
+    visibility: hidden;
+
+}
+
+.tasks:hover .edit img {
+    visibility: visible;
+}
+
+.tasks:hover .calendar-hover img {
+    visibility: visible;
+}
+
+.tasks:hover .trash img {
+    visibility: visible;
 }
 
 .edit:hover #edit,
@@ -137,7 +292,7 @@ export default {
 }
 
 #edit {
-    position: absolute;
+    position: relative;
     margin-left: -65px;
     margin-top: -30px;
     background-color: #000000CC;
@@ -147,14 +302,11 @@ export default {
     font-size: 13px;
     font-weight: 500;
     line-height: 15.85px;
-    opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0s linear 0.3s;
-
 }
 
 #calendar {
-    position: absolute;
+    position: relative;
     font-size: 13px;
     font-weight: 500;
     line-height: 15.85px;
@@ -166,13 +318,13 @@ export default {
     white-space: nowrap;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+
 
 }
 
 #trash {
-    position: absolute;
-    margin-left: -70px;
+    position: relative;
+    margin-left: -65px;
     margin-top: -30px;
     background-color: #000000CC;
     color: #FFFFFF;
@@ -181,28 +333,26 @@ export default {
     font-size: 13px;
     font-weight: 500;
     line-height: 15.85px;
-    opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0s linear 0.3s;
-
 }
 
-.bottom {
-    margin-top: -25%;
-    height: 100%;
-    /* margin-left: 20%; */
-    overflow: hidden;
-    display: grid;
+.cards {
+    height: 65vh;
+    margin-top: 8%;
+    margin-left: -58.8%;
+    display: flex;
+    flex-direction: column;
     gap: 30px;
     /* position: fixed; */
+    overflow: auto;
 
 }
 
 .entry {
     width: 701px;
     height: 40px;
-    margin-left: 170px;
-    margin-top: 255px;
+    margin-left: -392px;
+    /* margin-top: -400px; */
     font-family: Montserrat;
     font-size: 24px;
     font-weight: 800;
@@ -210,16 +360,23 @@ export default {
     text-align: left;
     color: black;
 
+
 }
 
 .tasks {
-
+    cursor: pointer;
     width: 678px;
     height: 109px;
-    margin-left: 170px;
+    margin-left: 10px;
     top: 179px;
     left: 458px;
-    border: 1px solid #E5E5E5
+    border: 1px solid #E5E5E5;
+
+
+}
+
+.tasks:hover {
+    background-color: #FAFAFA
 }
 
 .title {
@@ -234,13 +391,14 @@ export default {
 
 .description {
     margin-left: 68px;
-    margin-top: 8px;
+    margin-top: -21px;
     color: #81858E;
     font-family: Montserrat;
     font-size: 14px;
     font-weight: 400;
     line-height: 17.07px;
     text-align: left;
+    width: 430px;
 
 
 }
@@ -294,7 +452,7 @@ export default {
 .data {
     width: 150px;
     height: 30px;
-    margin-top: 8px;
+    margin-top: -30px;
     margin-left: 68px;
     padding-left: 25px;
     border: 1px solid #E5E5E5;

@@ -37,7 +37,7 @@ export default {
             this.$emit('update:showCreateSubtask', false);
         },
         CreateTask() {
-            axios.post('/subtask', {
+            axios.post('/2subtask', {
                 titleSubtask: this.titleSubtask,
                 descriptionSubtask: this.descriptionSubtask
             })

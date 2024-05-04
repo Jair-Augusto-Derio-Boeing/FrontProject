@@ -3,7 +3,7 @@
         <div class="navbar-div">
             <nav class="navbar">
                 <img class="rock-and-roll" src="../assets/rockandroll.png" alt="rockhand">
-                
+
                 <img src="../assets/profile.svg" alt="profile" class="profile">
                 <div class="ring">
                     <img src="../assets/ring.svg" alt="ring">
@@ -11,42 +11,47 @@
                 <div class="question">
                     <img src="../assets/question.svg" alt="question">
                 </div>
-                
+
                 <div class="plus" @click="showCreateTask = true">
                     <img src="../assets/plus.svg" alt="plus">
                 </div>
-                
-            <CreateTask v-model:showCreateTask="showCreateTask">
-            </CreateTask>
-            
-        </nav>
-    </div>
-    
-    <div class="fundo">
 
-        <div class="side-left">
-            <div class="items-left">
-                <div class="entrada" @click="showEntryPage = true">
-                    <img class="img-entrada" src="../assets/entradaLeft.svg" alt="imagem da entrada">
-                    <strong class="strong-entrada">Entrada</strong>
-                </div>
-                <div class="tarefa-hoje" @click="showEntryPage = false">
-                    <img src="../assets/calendarHoje.svg" alt="calendario hoje" class="calendar">
-                    <strong class="strong-calendar">Tarefas de hoje</strong>
-                </div>
-                <div class="vencidos" @click="showEntryPage = false">
-                    <img src="../assets/alert.svg" alt="alerta" class="alert">
-                    <strong class="strong-alert">Vencidos</strong>
+            </nav>
+        </div>
+
+
+
+        <div class="fundo">
+            <div class="side-left">
+                <div class="items-left">
+                    <div class="entrada" @click="showEntryPage = true">
+                        <img class="img-entrada" src="../assets/entradaLeft.svg" alt="imagem da entrada">
+                        <strong class="strong-entrada">Entrada</strong>
+                    </div>
+                    <div class="tarefa-hoje" @click="showEntryPage = false">
+                        <img src="../assets/calendarHoje.svg" alt="calendario hoje" class="calendar">
+                        <strong class="strong-calendar">Tarefas de hoje</strong>
+                    </div>
+                    <div class="vencidos" @click="showEntryPage = false">
+                        <img src="../assets/alert.svg" alt="alerta" class="alert">
+                        <strong class="strong-alert">Vencidos</strong>
+                    </div>
                 </div>
             </div>
+
+            <CreateTask v-model:showCreateTask="showCreateTask">
+            </CreateTask>
+
+            <EntryPage v-model:showEntryPage="showEntryPage" @openCreateTask="openCreateTask()">
+            </EntryPage>
+
+
+
+
+            <!-- <button class="teste" @click="showCreateSubtask = true">AbreSub</button>    
+                <CreateSubtask v-model:showCreateSubtask="showCreateSubtask"></CreateSubtask> -->
         </div>
-        <EntryPage v-model:showEntryPage="showEntryPage">
-            
-        </EntryPage>
-        <!-- <button class="teste" @click="showCreateSubtask = true">AbreSub</button>    
-        <CreateSubtask v-model:showCreateSubtask="showCreateSubtask"></CreateSubtask> -->
-    </div>
-    </template>
+</template>
 
 
 <script>
@@ -54,28 +59,32 @@
 import CreateTask from '../components/CreateTask.vue'
 import CreateSubtask from '../components/CreateSubtask.vue'
 import EntryPage from '@/components/EntryPage.vue'
+import SideLeft from '@/components/SideLeft.vue'
 import axios from 'axios'
 export default {
-    
+
     data() {
         return {
             showCreateTask: false,
             showCreateSubtask: false,
             showEntryPage: true,
+
         }
     },
 
     methods: {
-
-
+        openCreateTask() {
+            this.showCreateTask = true
+        },
     },
 
     components: {
         CreateTask,
         CreateSubtask,
         EntryPage,
+        SideLeft,
     },
-    created () {
+    created() {
         axios.defaults.baseURL = 'http://127.0.0.1:8000/api';
     },
 
@@ -84,26 +93,22 @@ export default {
 </script>
 
 <style scoped>
-
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
-/* .teste{
-    height: 40px;
-    width: 80px;
-    margin-left: 700px;
-} */
-.fundo{
+.fundo {
+    z-index: 0;
     top: 0;
     left: 0;
     width: 100%;
     height: 100vh;
-    overflow: hidden;
     display: flex;
     align-items: center;
 }
+
 * {
     margin: 0px;
     padding: 0px;
+
 }
 
 .navbar {
@@ -112,6 +117,7 @@ export default {
     background-color: black;
     color: white;
     display: flex;
+    position: relative;
 }
 
 .rock-and-roll {
@@ -170,10 +176,12 @@ export default {
 }
 
 .side-left {
+    z-index: 1;
     width: 293px;
-    height: 720px;
-    margin-top: 0px;
+    height: 100vh;
+    top: 70px;
     background-color: #FAFAFA;
+    position: absolute;
 }
 
 .items-left {
@@ -220,7 +228,8 @@ export default {
     cursor: pointer;
 
 }
-.calendar{
+
+.calendar {
     cursor: pointer;
 
 }
@@ -239,7 +248,8 @@ export default {
     cursor: pointer;
 
 }
-.alert{
+
+.alert {
     cursor: pointer;
 
 }

@@ -33,6 +33,12 @@ export default {
         showCreateTask: {
             type: Boolean,
             required: true,
+            
+        },
+
+        selectedProduct: {
+            type: Object,
+            required: false,
         }
     },
     methods: {
@@ -50,6 +56,18 @@ export default {
                 'due_date': this.dateTask,
                 'status': 'pending'
             });
+        }
+    },
+    watch: {
+        showCreateTask(newValue, oldValue) {
+            if (newValue === true && this.selectedTask?.id) {
+                this.titleTask = this.selectedTask.name;
+                this.description = this.selectedTask.amount;
+            } else if (newValue === true) {
+                this.productName = '';
+                this.productValue = 0;
+
+            }
         }
     },
 
@@ -70,6 +88,7 @@ export default {
     align-items: center;
     color: black;
     cursor: default;
+    z-index: 3;
 }
 
 .modal {
