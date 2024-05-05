@@ -2,15 +2,15 @@
     <div class="back" v-if="showEntryPage">
         <p class="entry">Entrada</p>
         <div class="cards">
-            <div class="tasks" v-for="task in Tasks" :key="task.id" @click="selectedTask = task"
+            <div class="tasks" v-for="task in Tasks" :key="task.id" @click="openVizualizeTask(task), selectedTask = task "
                 :style="selectedTask.id === task.id ? 'background-color: #FAFAFA' : ''">
                 <div class="flex">
                     <div class="grid">
 
                         <div class="round">
                             <input type="checkbox" :name="'checkbox' + task.id" :id="'checkbox' + task.id"
-                                :checked="IsTaskChecked(task)" v-on:change="updateTaskStatus(task)" />
-                            <label :for="'checkbox' + task.id"></label>
+                                :checked="IsTaskChecked(task)" v-on:change="updateTaskStatus(task)" @click.stop="''"/>
+                            <label :for="'checkbox' + task.id" @click.stop="''"></label>
                             <p class="title"> {{ task.title }}</p>
                         </div>
 
@@ -30,15 +30,15 @@
                     <div class="icons-hover">
                         <div class="edit">
                             <span id="edit">Editar tarefa</span>
-                            <img src="../assets/edit.svg" alt="edit" @click="openCreateTask()">
+                            <img src="../assets/edit.svg" alt="edit" @click="openEditTask(task)" @click.stop="''">
                         </div>
                         <div class="calendar-hover">
                             <span id="calendar">Definir vencimento</span>
-                            <img src="../assets/calendar.svg" alt="calendar">
+                            <img src="../assets/calendar.svg" alt="calendar" @click="openCreateTask(task)" @click.stop="''">
                         </div>
                         <div class="trash">
                             <span id="trash">Excluir tarefa</span>
-                            <img src="../assets/trash.svg" alt="trash bucket" @click="deleteTask(task.id)">
+                            <img src="../assets/trash.svg" alt="trash bucket" @click="deleteTask(task.id)" @click.stop="''">
                         </div>
                     </div>
 
@@ -61,12 +61,13 @@ export default {
             type: Boolean,
             required: true
         },
+        
     },
     data() {
         return {
             Tasks: [],
             selectedTask: {},
-            taskIsChecked: [],
+            taskChecked: [],
             showCreateTask: false
 
         }
@@ -75,11 +76,20 @@ export default {
         openCreateTask() {
             this.$emit('openCreateTask')
         },
+        openEditTask(task){
+            this.$emit('openEditTask', task)
+        },
+        openVizualizeTask(task){ 
+            this.$emit('openVizualizeTask', task)
+        },
         getTask() {
             axios.get('/task')
                 .then((response) => {
                     this.Tasks = response.data.data;
                     console.log(this.Tasks);
+                })
+                .catch((error) => {
+                    console.log(error);
                 });
         },
         deleteTask(index) {
@@ -89,9 +99,16 @@ export default {
                         index)
                     this.Tasks.splice(deletedTask, 1);
                 })
+                .catch((error) => {
+                    console.log(error);
+                });
         },
         IsTaskChecked(task) {
-            return this.taskIsChecked.some(item => item.id === task.id && item.status === 'completed');
+            if (task.status === 'completed') {
+                return true
+            } else {
+                return false
+            }
         },
         updateTaskStatus(task) {
             let newStatus = task.status === 'completed' ? 'pending' : 'completed';
@@ -99,12 +116,12 @@ export default {
             axios.put(`/task/${task.id}`, { status: newStatus })
                 .then(() => {
 
-                    let taskToUpdate = this.taskIsChecked.find(item => item.id === task.id);
+                    let taskToUpdate = this.taskChecked.find(item => item.id === task.id);
 
                     if (taskToUpdate) {
                         taskToUpdate.status = newStatus;
                     } else {
-                        this.taskIsChecked.push({ id: task.id, status: newStatus });
+                        this.taskChecked.push({ id: task.id, status: newStatus });
                     }
 
                     task.status = newStatus;
@@ -294,14 +311,12 @@ export default {
 #edit {
     position: relative;
     margin-left: -65px;
-    margin-top: -30px;
     background-color: #000000CC;
     color: #FFFFFF;
     padding: 5px;
     white-space: nowrap;
     font-size: 13px;
     font-weight: 500;
-    line-height: 15.85px;
     visibility: hidden;
 }
 

@@ -29,7 +29,11 @@ export default {
         showCreateSubtask: {
             type: Boolean,
             required: true,
-        }
+        },
+        selectedTask: {
+            type: Object,
+            required: false,
+        },
     },
     methods: {
         closeModal() {
@@ -37,14 +41,11 @@ export default {
             this.$emit('update:showCreateSubtask', false);
         },
         CreateTask() {
-            axios.post('/2subtask', {
-                titleSubtask: this.titleSubtask,
-                descriptionSubtask: this.descriptionSubtask
+            axios.post('/subtask', {
+                'titleSubtask': this.titleSubtask,
+                'statusSubtask': 'pending',
+                'id_task': this.selectedTask.id
             })
-
-            console.log('criou a subtarefa');
-            console.log(`nome da subtarefa ${this.titleSubtask}`);
-            console.log(`descrição de subtarefa ${this.descriptionSubtask}`);
         },
     },
 
@@ -65,6 +66,7 @@ export default {
     align-items: center;
     color: black;
     cursor: default;
+    z-index: 4;
 }
 
 .modal {

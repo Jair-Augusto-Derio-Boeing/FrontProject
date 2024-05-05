@@ -1,56 +1,62 @@
 <template>
 
-        <div class="navbar-div">
-            <nav class="navbar">
-                <img class="rock-and-roll" src="../assets/rockandroll.png" alt="rockhand">
+    <div class="navbar-div">
+        <nav class="navbar">
+            <img class="rock-and-roll" src="../assets/rockandroll.png" alt="rockhand">
 
-                <img src="../assets/profile.svg" alt="profile" class="profile">
-                <div class="ring">
-                    <img src="../assets/ring.svg" alt="ring">
-                </div>
-                <div class="question">
-                    <img src="../assets/question.svg" alt="question">
-                </div>
-
-                <div class="plus" @click="showCreateTask = true">
-                    <img src="../assets/plus.svg" alt="plus">
-                </div>
-
-            </nav>
-        </div>
-
-
-
-        <div class="fundo">
-            <div class="side-left">
-                <div class="items-left">
-                    <div class="entrada" @click="showEntryPage = true">
-                        <img class="img-entrada" src="../assets/entradaLeft.svg" alt="imagem da entrada">
-                        <strong class="strong-entrada">Entrada</strong>
-                    </div>
-                    <div class="tarefa-hoje" @click="showEntryPage = false">
-                        <img src="../assets/calendarHoje.svg" alt="calendario hoje" class="calendar">
-                        <strong class="strong-calendar">Tarefas de hoje</strong>
-                    </div>
-                    <div class="vencidos" @click="showEntryPage = false">
-                        <img src="../assets/alert.svg" alt="alerta" class="alert">
-                        <strong class="strong-alert">Vencidos</strong>
-                    </div>
-                </div>
+            <img src="../assets/profile.svg" alt="profile" class="profile">
+            <div class="ring">
+                <img src="../assets/ring.svg" alt="ring">
+            </div>
+            <div class="question">
+                <img src="../assets/question.svg" alt="question">
             </div>
 
-            <CreateTask v-model:showCreateTask="showCreateTask">
-            </CreateTask>
+            <div class="plus" @click="openCreateTask()">
+                <img src="../assets/plus.svg" alt="plus">
+            </div>
 
-            <EntryPage v-model:showEntryPage="showEntryPage" @openCreateTask="openCreateTask()">
-            </EntryPage>
+        </nav>
+    </div>
 
 
 
-
-            <!-- <button class="teste" @click="showCreateSubtask = true">AbreSub</button>    
-                <CreateSubtask v-model:showCreateSubtask="showCreateSubtask"></CreateSubtask> -->
+    <div class="fundo">
+        <div class="side-left">
+            <div class="items-left">
+                <div class="entrada" @click="showEntryPage = true">
+                    <img class="img-entrada" src="../assets/entradaLeft.svg" alt="imagem da entrada">
+                    <strong class="strong-entrada">Entrada</strong>
+                </div>
+                <div class="tarefa-hoje" @click="showEntryPage = false">
+                    <img src="../assets/calendarHoje.svg" alt="calendario hoje" class="calendar">
+                    <strong class="strong-calendar">Tarefas de hoje</strong>
+                </div>
+                <div class="vencidos" @click="showEntryPage = false">
+                    <img src="../assets/alert.svg" alt="alerta" class="alert">
+                    <strong class="strong-alert">Vencidos</strong>
+                </div>
+            </div>
         </div>
+
+        <CreateTask v-model:showCreateTask="showCreateTask" :selectedTask="selectedTask">
+        </CreateTask>
+
+        <EntryPage v-model:showEntryPage="showEntryPage" @openCreateTask="openCreateTask" @openEditTask="openEditTask"
+            @openVizualizeTask="openVizualizeTask">
+        </EntryPage>
+
+        <VizualizeTask v-model:showVizualizeTask="showVizualizeTask" :selectedTask="selectedTask"
+            @openMenuTask="openMenuTask" @closeMenuTask="closeMenuTask" @openCreateSubtask="openCreateSubtask">
+
+        </VizualizeTask>
+
+        <MenuTask :selectedTask="selectedTask" v-model:showMenuTask="showMenuTask" @closeMenuTask="closeMenuTask">
+        </MenuTask>
+
+        <CreateSubtask :selectedTask="selectedTask" v-model:showCreateSubtask="showCreateSubtask"></CreateSubtask>
+
+    </div>
 </template>
 
 
@@ -58,8 +64,10 @@
 
 import CreateTask from '../components/CreateTask.vue'
 import CreateSubtask from '../components/CreateSubtask.vue'
-import EntryPage from '@/components/EntryPage.vue'
-import SideLeft from '@/components/SideLeft.vue'
+import EntryPage from '../components/EntryPage.vue'
+import SideLeft from '../components/SideLeft.vue'
+import VizualizeTask from '../components/VizualizeTask.vue'
+import MenuTask from '../components/MenuTask.vue'
 import axios from 'axios'
 export default {
 
@@ -68,14 +76,42 @@ export default {
             showCreateTask: false,
             showCreateSubtask: false,
             showEntryPage: true,
+            selectedTask: {},
+            showVizualizeTask: false,
+            showMenuTask: false,
 
         }
     },
 
     methods: {
         openCreateTask() {
-            this.showCreateTask = true
+            this.selectedTask = {};
+            this.showCreateTask = true;
         },
+        openEditTask(task) {
+            this.selectedTask = task;
+            this.showCreateTask = true;
+        },
+        openVizualizeTask(task) {
+            this.selectedTask = task;
+            this.showVizualizeTask = true;
+        },
+        openMenuTask() {
+            if (this.showMenuTask) {
+                this.showMenuTask = false
+            }
+            else {
+                this.showMenuTask = true
+            }
+        },
+        openCreateSubtask(task){
+            this.selectedTask = task;
+            this.showCreateSubtask = true;
+        },
+        closeMenuTask() {
+            this.showMenuTask = false
+            this.showVizualizeTask = false
+        }
     },
 
     components: {
@@ -83,6 +119,8 @@ export default {
         CreateSubtask,
         EntryPage,
         SideLeft,
+        VizualizeTask,
+        MenuTask
     },
     created() {
         axios.defaults.baseURL = 'http://127.0.0.1:8000/api';

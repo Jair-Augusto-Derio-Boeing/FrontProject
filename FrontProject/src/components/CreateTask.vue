@@ -11,7 +11,8 @@
             </div>
             <div class="button">
                 <button class="button-cancelar" @click="closeModal()">Cancelar</button>
-                <button class="button-criar" @click="createTask(), closeModal()">Criar Tarefa</button>
+                <button class="button-criar" @click="createTask(), closeModal()">{{ selectedTask.id ? 'Editar' : 'Criar'
+                    }} Tarefa</button>
             </div>
 
             <slot></slot>
@@ -26,17 +27,17 @@ export default {
         return {
             titleTask: '',
             descriptionTask: '',
-            dateTask: ''
+            dateTask: '',
         }
     },
     props: {
         showCreateTask: {
             type: Boolean,
             required: true,
-            
+
         },
 
-        selectedProduct: {
+        selectedTask: {
             type: Object,
             required: false,
         }
@@ -50,22 +51,43 @@ export default {
             this.dateTask = 0
         },
         createTask() {
-            axios.post('/task', {
-                'title': this.titleTask,
-                'description': this.descriptionTask,
-                'due_date': this.dateTask,
-                'status': 'pending'
-            });
+            if (this.selectedTask.id) {
+                axios.put(`/task/${this.selectedTask.id}`, {
+                    'title': this.titleTask,
+                    'description': this.descriptionTask,
+                    'due_date': this.dateTask,
+                })
+                    .then(() => {
+                        this.$emit('update:showCreateTask', false)
+                    })
+            } else {
+
+                axios.post('/task', {
+                    'title': this.titleTask,
+                    'description': this.descriptionTask,
+                    'due_date': this.dateTask,
+                    'status': 'pending'
+                })
+                    .then(() => {
+                        this.$emit('update:showCreateTask', false)
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            }
         }
     },
     watch: {
         showCreateTask(newValue, oldValue) {
-            if (newValue === true && this.selectedTask?.id) {
-                this.titleTask = this.selectedTask.name;
-                this.description = this.selectedTask.amount;
+            if (newValue === true && this.selectedTask.id) {
+                this.titleTask = this.selectedTask.title;
+                this.descriptionTask = this.selectedTask.description;
+                this.dateTask = new Date(this.selectedTask.due_date).toISOString().substr(0, 10);
+
             } else if (newValue === true) {
-                this.productName = '';
-                this.productValue = 0;
+                this.titleTask = '';
+                this.descriptionTask = '';
+                this.due_date = '';
 
             }
         }
