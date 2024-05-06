@@ -7,7 +7,7 @@
             </div>
             <div class="button">
                 <button class="button-cancelar" @click="closeModal()">Cancelar</button>
-                <button class="button-criar" @click="CreateTask(), closeModal()">Criar subtarefa</button>
+                <button class="button-criar" @click="CreateTask(selectedTask), closeModal()">Criar subtarefa</button>
             </div>
 
             <slot></slot>
@@ -40,11 +40,12 @@ export default {
             console.log('fecha o modal');
             this.$emit('update:showCreateSubtask', false);
         },
-        CreateTask() {
+        CreateTask(selectedTask) {
             axios.post('/subtask', {
                 'titleSubtask': this.titleSubtask,
+                'descriptionSubtask': 'description não é utilizado',
                 'statusSubtask': 'pending',
-                'id_task': this.selectedTask.id
+                'id_task': selectedTask.id
             })
         },
     },
@@ -93,7 +94,6 @@ input {
 }
 
 .input1 {
-    width: 180px;
     height: 30px;
     font-size: 16px;
     font-weight: 600;

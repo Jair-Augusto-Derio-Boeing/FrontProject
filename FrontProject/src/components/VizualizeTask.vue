@@ -26,12 +26,35 @@
             <div class="subtasks">
                 <p class="subtask-p">Subtarefas</p>
                 <div class="bar2"></div>
-                <div class="round2">
-                    <input type="checkbox" :name="'checkbox' + selectedTask.id" :id="'checkbox' + selectedTask.id"
-                        :checked="IsTaskChecked(selectedTask)" v-on:change="updateTaskStatus(selectedTask)" />
-                    <label :for="'checkbox' + selectedTask.id"></label>
-                    <p>{{ this.subtask }}</p>
+
+                <div class="overflow">
+
+                    <div class="round2" v-for="subtask in selectedTask.subtasks" :key="subtask.id + 1">
+                        <input type="checkbox" :name="'checkbox' + (subtask.id + 1)" :id="'checkbox' + (subtask.id + 1)"
+                        :checked="SubtaskTaskChecked(subtask)" v-on:change="updateSubtaskStatus(subtask)" />
+                        <label :for="'checkbox' + (subtask.id + 1)"></label>
+                        <p>{{ subtask.titleSubtask }}</p>
+                        
+                        <div class="icons-hover">
+                            <div class="edit">
+                                <span id="edit">Editar subtarefa</span>
+                                <img src="../assets/edit.svg" alt="edit" @click="openEditTask(task)" @click.stop="''">
+                            </div>
+                            <div class="calendar-hover">
+                                <span id="calendar">Definir vencimento</span>
+                                <img src="../assets/calendar.svg" alt="calendar" @click="openCreateTask(task)"
+                                @click.stop="''">
+                            </div>
+                            <div class="trash">
+                                <span id="trash">Excluir subtarefa</span>
+                                <img src="../assets/trash.svg" alt="trash bucket" @click="deleteTask(task.id)"
+                                @click.stop="''">
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+
                 <div class="create-subtask" @click="openCreateSubtask(selectedTask)">
                     <img src="../assets/plus.svg">
                     <p>Criar Subtarefa</p>
@@ -80,7 +103,9 @@ export default {
     data() {
         return {
             Taks: [],
-            subtask: this.selectedTask.subtasks
+            subtask: [],
+            taskChecked: [],
+
         }
     },
     props: {
@@ -150,6 +175,34 @@ export default {
             var formatted_date = (day < 10 ? '0' : '') + day + '/' + (month < 10 ? '0' : '') + month + '/' + year;
             return formatted_date;
         },
+        SubtaskTaskChecked(subtask) {
+            if (subtask.statusSubtask === 'completed') {
+                return true
+            } else {
+                return false
+            }
+        },
+        updateSubtaskStatus(subtask) {
+            console.log(subtask.statusSubtask);
+            let newStatus = subtask.statusSubtask === 'completed' ? 'pending' : 'completed';
+
+            axios.put(`/task/${subtask.id}`, { statusSubtask: newStatus })
+                .then(() => {
+
+                    let taskToUpdate = this.taskChecked.find(item => item.id === subtask.id);
+
+                    if (taskToUpdate) {
+                        taskToUpdate.statusSubtask = newStatus;
+                    } else {
+                        this.taskChecked.push({ id: subtask.id, statusSubtask: newStatus });
+                    }
+
+                    subtask.statusSubtask = newStatus;
+                })
+        },
+        openCreateSubtask(task) {
+            this.$emit('openCreateSubtask', task)
+        },
         IsTaskChecked(task) {
             if (task.status === 'completed') {
                 return true
@@ -174,9 +227,6 @@ export default {
                     task.status = newStatus;
                 })
         },
-        openCreateSubtask(task){
-            this.$emit('openCreateSubtask', task)
-        }
     },
     created() {
         this.getTask()
@@ -185,6 +235,10 @@ export default {
 </script>
 
 <style scoped>
+.overflow{
+    overflow: auto;
+    height: 34vh;
+}
 .backdrop {
     position: fixed;
     top: 0;
@@ -551,6 +605,7 @@ export default {
     text-align: left;
     color: #000000;
     position: relative;
+    width: 150px;
 
 
 }
@@ -566,6 +621,7 @@ export default {
     margin-top: 15px;
     display: flex;
     gap: 5.5px;
+
 }
 
 .round label {
@@ -610,7 +666,7 @@ export default {
 
 .round2 {
     position: relative;
-    margin-top: 40px;
+    margin-top: 30px;
     display: flex;
     gap: 30px;
 }
@@ -652,7 +708,8 @@ export default {
 .round2 input[type="checkbox"]:checked+label:after {
     opacity: 1;
 }
-.create-subtask{
+
+.create-subtask {
     position: relative;
     display: flex;
     top: 25px;
@@ -663,18 +720,111 @@ export default {
     border-radius: 10px;
     cursor: pointer;
 }
-.create-subtask p{
+
+.create-subtask p {
     position: relative;
     top: 4px;
     font-size: 14px;
     font-weight: 600;
     color: white;
 }
-.create-subtask img{
+
+.create-subtask img {
     width: 16px;
     height: 16px;
     position: relative;
     top: 7px;
     left: 7px;
+}
+
+.icons-hover {
+    position: relative;
+    display: flex;
+    left: 90px;
+    align-items: center;
+    height: 39px;
+    width: 105px;
+    gap: 20px;
+    transition: 0s opacity ease;
+}
+
+.edit,
+.calendar-hover,
+.trash img {
+    visibility: hidden;
+    position: relative;
+    top: -15px;
+}
+.trash img{
+    position: relative;
+    left: 10px;
+}
+
+.round2:hover .edit img {
+    visibility: visible;
+    cursor: pointer;
+}
+
+.round2:hover .calendar-hover img {
+    visibility: visible;
+    cursor: pointer;
+
+}
+
+.round2:hover .trash img {
+    visibility: visible;
+    cursor: pointer;
+
+}
+
+.edit:hover #edit,
+.calendar-hover:hover #calendar,
+.trash:hover #trash {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+#edit {
+    position: relative;
+    margin-left: -65px;
+    background-color: #000000CC;
+    color: #FFFFFF;
+    padding: 5px;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 500;
+    visibility: hidden;
+}
+
+#calendar {
+    position: relative;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 15.85px;
+    margin-left: -100px;
+    margin-top: -30px;
+    background-color: #000000CC;
+    color: #FFFFFF;
+    padding: 5px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+
+
+}
+
+#trash {
+    position: relative;
+    margin-left: -75px;
+    top: -18px;
+    background-color: #000000CC;
+    color: #FFFFFF;
+    padding: 5px;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 15.85px;
+    visibility: hidden;
 }
 </style>

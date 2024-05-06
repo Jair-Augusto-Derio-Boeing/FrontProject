@@ -2,14 +2,19 @@
     <div class="back" v-if="showEntryPage">
         <p class="entry">Entrada</p>
         <div class="cards">
-            <div class="tasks" v-for="task in Tasks" :key="task.id" @click="openVizualizeTask(task), selectedTask = task "
+
+            <!-- 'Era para colocar dentro da div, mas não consegui :(' :class="{
+                'subtasks': task.subtasks && task.subtasks.length > 0,
+                'tasks': !task.subtasks.length > 0
+            }" -->
+            <div class="tasks" v-for="task in Tasks" :key="task.id" @click="openVizualizeTask(task), selectedTask = task"
                 :style="selectedTask.id === task.id ? 'background-color: #FAFAFA' : ''">
                 <div class="flex">
                     <div class="grid">
 
                         <div class="round">
                             <input type="checkbox" :name="'checkbox' + task.id" :id="'checkbox' + task.id"
-                                :checked="IsTaskChecked(task)" v-on:change="updateTaskStatus(task)" @click.stop="''"/>
+                                :checked="IsTaskChecked(task)" v-on:change="updateTaskStatus(task)" @click.stop="''" />
                             <label :for="'checkbox' + task.id" @click.stop="''"></label>
                             <p class="title"> {{ task.title }}</p>
                         </div>
@@ -25,24 +30,37 @@
                             <img src="../assets/redCalendar.svg" v-if="Past(task.due_date)">
                             <p>{{ Today(task.due_date) ? "Hoje" : formatDate(task.due_date) }}</p>
                         </div>
-                    </div>
 
-                    <div class="icons-hover">
-                        <div class="edit">
-                            <span id="edit">Editar tarefa</span>
-                            <img src="../assets/edit.svg" alt="edit" @click="openEditTask(task)" @click.stop="''">
-                        </div>
-                        <div class="calendar-hover">
-                            <span id="calendar">Definir vencimento</span>
-                            <img src="../assets/calendar.svg" alt="calendar" @click="openCreateTask(task)" @click.stop="''">
-                        </div>
-                        <div class="trash">
-                            <span id="trash">Excluir tarefa</span>
-                            <img src="../assets/trash.svg" alt="trash bucket" @click="deleteTask(task.id)" @click.stop="''">
-                        </div>
+                        <!-- <div class="subtask-card">
+                            <div v-if="task.subtasks && task.subtasks.length > 0">
+                   
+                                <div class="round" v-for="subtask in task.subtasks" :key="subtask.id" @click.stop="''">
+                                    <input type="checkbox" :name="'checkbox' + subtask.id"
+                                        :id="'custom-checkbox' + subtask.id" v-model="IsTaskChecked"
+                                        @change="updateTaskStatus" />
+                                    <label :for="'custom-checkbox' + subtask.id"></label>
+                                    <p @click.stop>{{ subtask.titleSubtask }}</p>
+                                </div>
+                            </div>
+                        </div> -->
                     </div>
-
                 </div>
+
+                <div class="icons-hover">
+                    <div class="edit">
+                        <span id="edit">Editar tarefa</span>
+                        <img src="../assets/edit.svg" alt="edit" @click="openEditTask(task)" @click.stop="''">
+                    </div>
+                    <div class="calendar-hover">
+                        <span id="calendar">Definir vencimento</span>
+                        <img src="../assets/calendar.svg" alt="calendar" @click="openCreateTask(task)" @click.stop="''">
+                    </div>
+                    <div class="trash">
+                        <span id="trash">Excluir tarefa</span>
+                        <img src="../assets/trash.svg" alt="trash bucket" @click="deleteTask(task.id)" @click.stop="''">
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -61,7 +79,7 @@ export default {
             type: Boolean,
             required: true
         },
-        
+
     },
     data() {
         return {
@@ -76,10 +94,10 @@ export default {
         openCreateTask() {
             this.$emit('openCreateTask')
         },
-        openEditTask(task){
+        openEditTask(task) {
             this.$emit('openEditTask', task)
         },
-        openVizualizeTask(task){ 
+        openVizualizeTask(task) {
             this.$emit('openVizualizeTask', task)
         },
         getTask() {
@@ -154,6 +172,17 @@ export default {
 </script>
 
 <style scoped>
+/* .subtask-card {
+    display: grid;
+    position: relative;
+    border: 1px solid #E5E5E5;
+    top: 43px;
+    left: -1px;
+    width: 678px;
+    height: 20vh;
+    overflow: auto;
+} */
+
 .today {
     background: #0094881A;
     color: #00948800 !important;
@@ -163,6 +192,8 @@ export default {
     margin-left: 68.5px;
     margin-top: -30px;
     display: flex;
+    position: relative;
+    top: 65px;
 
 
 }
@@ -199,7 +230,7 @@ export default {
     position: relative;
     left: 65px;
     display: flex;
-    top: -15px;
+    top: 35px;
 }
 
 .past img {
@@ -229,7 +260,7 @@ export default {
     height: 30px;
     position: relative;
     left: 65px;
-    top: -15px;
+    top: 30px;
     display: flex;
 
 }
@@ -272,9 +303,10 @@ export default {
 }
 
 .icons-hover {
+    position: relative;
     display: flex;
-    left: 900px;
-    margin-top: 25px;
+    left: 100px;
+    top: -500px;
     height: 109px;
     width: 105px;
     gap: 35px;
@@ -355,10 +387,8 @@ export default {
     height: 65vh;
     margin-top: 8%;
     margin-left: -58.8%;
-    display: flex;
-    flex-direction: column;
+    display: grid;
     gap: 30px;
-    /* position: fixed; */
     overflow: auto;
 
 }
@@ -383,16 +413,27 @@ export default {
     width: 678px;
     height: 109px;
     margin-left: 10px;
-    top: 179px;
-    left: 458px;
     border: 1px solid #E5E5E5;
-
+    position: relative;
 
 }
-
 .tasks:hover {
     background-color: #FAFAFA
 }
+
+/* .subtasks {
+    position: relative;
+    cursor: pointer;
+    width: 678px;
+    height: 109px;
+    margin-left: 10px;
+    border: 1px solid #E5E5E5;
+
+}
+
+.subtasks:hover {
+    background-color: #FAFAFA
+} */
 
 .title {
     font-family: Montserrat;
@@ -401,6 +442,8 @@ export default {
     line-height: 19.5px;
     text-align: left;
     color: black;
+    position: relative;
+
 
 }
 
@@ -414,6 +457,8 @@ export default {
     line-height: 17.07px;
     text-align: left;
     width: 430px;
+    position: relative;
+    top: 28px;
 
 
 }
@@ -467,7 +512,7 @@ export default {
 .data {
     width: 150px;
     height: 30px;
-    margin-top: -30px;
+    margin-top: -80px;
     margin-left: 68px;
     padding-left: 25px;
     border: 1px solid #E5E5E5;
