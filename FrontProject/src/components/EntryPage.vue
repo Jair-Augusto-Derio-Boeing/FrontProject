@@ -305,8 +305,8 @@ export default {
 .icons-hover {
     position: relative;
     display: flex;
-    left: 100px;
-    top: -500px;
+    left: 470px;
+    top: -45px;
     height: 109px;
     width: 105px;
     gap: 35px;
@@ -449,7 +449,7 @@ export default {
 
 .description {
     margin-left: 68px;
-    margin-top: -21px;
+    margin-top: -22px;
     color: #81858E;
     font-family: Montserrat;
     font-size: 14px;
